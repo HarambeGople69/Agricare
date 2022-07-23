@@ -11,6 +11,8 @@ import 'package:myapp/api_services/api_service.dart';
 import 'package:myapp/services/network_connection/network_connection.dart';
 import 'package:myapp/utils/utils.dart';
 import 'package:myapp/widgets/our_sized_box.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 import '../../controller/login_controller.dart';
 import '../../models/attendance_model.dart';
 import '../../models/login_response_model.dart';
@@ -31,11 +33,14 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // chechNet();
+    chechNet();
   }
 
   chechNet() async {
-    await CheckConnectivity().checkfirst();
+    await Hive.openBox<int>("attendance");
+    await Hive.openBox<loginResponseModel>("userprofileDB");
+    await Hive.openBox<AttendanceModel>("attendanceDB");
+    // await CheckConnectivity().checkfirst();
   }
 
   @override
@@ -131,11 +136,12 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                       ),
                       onPressed: value == 1
                           ? () async {
-                              final service = FlutterBackgroundService();
-                              var isRunning = await service.isRunning();
-                              if (isRunning == false) {
-                                service.startService();
-                              }
+                              // Workmanager().registerPeriodicTask(
+                              //   "taskTwo",
+                              //   "backUppp",
+                              //   frequency: Duration(minutes: 15),
+                              // );
+
                               var inputFormat =
                                   DateFormat('yyyy-MM-dd HH:mm:s');
                               String inputDate = inputFormat
@@ -214,6 +220,25 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                                   ),
                                 );
                               }
+                              // final prefs =
+                              //     await SharedPreferences.getInstance();
+                              // await prefs.setInt("abc", 0);
+                              // Workmanager().registerOneOffTask(
+                              //   "taskOne",
+                              //   "backUp",
+                              //   initialDelay: Duration(seconds: 1),
+                              // );
+                              // final service = FlutterBackgroundService();
+                              // var isRunning = await service.isRunning();
+                              // if (isRunning == false) {
+                              //   service.startService();
+                              // }
+                              Workmanager().registerOneOffTask(
+                                "taskOne",
+                                "backUp",
+                                initialDelay: Duration(seconds: 1),
+                              );
+                              print("HELLO WORLD");
                             }
                           : null,
                       child: Text(
@@ -245,6 +270,10 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                       ),
                       onPressed: value == 0
                           ? () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setInt("abc", 1);
+                              Workmanager().cancelAll();
                               var connectivityResult =
                                   await (Connectivity().checkConnectivity());
                               if (connectivityResult ==
@@ -272,7 +301,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                                   signal: 0.toString(),
                                   stamp_time: time,
                                 ));
-                                // BackgroundLocation.stopLocationService();
+                                BackgroundLocation.stopLocationService();
                                 Hive.box<int>("attendance").put("state", 1);
                                 Hive.box<String>("last_punch_out").put(
                                   "state",
@@ -309,11 +338,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                                   ),
                                 );
                                 // }
-                              }
-                              final service = FlutterBackgroundService();
-                              var isRunning = await service.isRunning();
-                              if (isRunning) {
-                                service.invoke("stopService");
                               }
                             }
                           : null,
@@ -445,3 +469,41 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     );
   }
 }
+
+// import 'dart:io'; // for exit();
+// import 'dart:async';
+// import 'dart:isolate';
+
+// Future<SendPort> initIsolate() async {
+//   Completer completer = new Completer<SendPort>();
+//   ReceivePort isolateToMainStream = ReceivePort();
+
+//   isolateToMainStream.listen((data) {
+//     if (data is SendPort) {
+//       SendPort mainToIsolateStream = data;
+//       completer.complete(mainToIsolateStream);
+//     } else {
+//       print('[isolateToMainStream] $data');
+//     }
+//   });
+
+//   Isolate myIsolateInstance = await Isolate.spawn(myIsolate, isolateToMainStream.sendPort);
+//   return completer.future;
+// }
+
+// void myIsolate(SendPort isolateToMainStream) {
+//   ReceivePort mainToIsolateStream = ReceivePort();
+//   isolateToMainStream.send(mainToIsolateStream.sendPort);
+
+//   mainToIsolateStream.listen((data) {
+//     print('[mainToIsolateStream] $data');
+//     exit(0);
+//   });
+
+//   isolateToMainStream.send('This is from myIsolate()');
+// }
+
+// void main() async {
+//   SendPort mainToIsolateStream = await initIsolate();
+//   mainToIsolateStream.send('This is from main()');
+// }

@@ -32,36 +32,36 @@ class TrackLocation {
     // bring to foreground
     Timer.periodic(const Duration(seconds: 1), (timer) async {
       int abc = Hive.box<int>("attendance").get("state")!;
-      // if (abc == 0) {
-      //   var inputFormat = DateFormat('yyyy-MM-dd HH:mm:s');
-      //   String inputDate = inputFormat
-      //       .parse(
-      //         DateTime.now().toString(),
-      //       )
-      //       .toString();
-      //   String time = inputDate.split(".000")[0];
-      //   Position? position;
-      //   position = await GetCurrentLocation().getCurrentLocation();
-      //   AttendanceModel attendanceModel = AttendanceModel(
-      //     mr: Hive.box<loginResponseModel>("userprofileDB")
-      //         .get("currentUser")!
-      //         .userId
-      //         .toString(),
-      //     longitude: position!.longitude.toString(),
-      //     latitude: position.latitude.toString(),
-      //     signal: "",
-      //     stamp_time: time,
-      //   );
-      //   var connectivityResult = await (Connectivity().checkConnectivity());
-      //   if (connectivityResult != ConnectivityResult.none) {
-      //     await APIService().myattendance(attendanceModel);
-      //   } else {
-      //     Hive.box<AttendanceModel>("attendanceDB").add(attendanceModel);
-      //   }
-      //   print("Attendance is being recorded");
-      // } else {
-      //   print("Attendance is not recorded");
-      // }
+      if (abc == 0) {
+        var inputFormat = DateFormat('yyyy-MM-dd HH:mm:s');
+        String inputDate = inputFormat
+            .parse(
+              DateTime.now().toString(),
+            )
+            .toString();
+        String time = inputDate.split(".000")[0];
+        Position? position;
+        position = await GetCurrentLocation().getCurrentLocation();
+        AttendanceModel attendanceModel = AttendanceModel(
+          mr: Hive.box<loginResponseModel>("userprofileDB")
+              .get("currentUser")!
+              .userId
+              .toString(),
+          longitude: position!.longitude.toString(),
+          latitude: position.latitude.toString(),
+          signal: "",
+          stamp_time: time,
+        );
+        var connectivityResult = await (Connectivity().checkConnectivity());
+        if (connectivityResult != ConnectivityResult.none) {
+          await APIService().myattendance(attendanceModel);
+        } else {
+          Hive.box<AttendanceModel>("attendanceDB").add(attendanceModel);
+        }
+        print("Attendance is being recorded");
+      } else {
+        print("Attendance is not recorded");
+      }
 
       if (service is AndroidServiceInstance) {
         service.setForegroundNotificationInfo(

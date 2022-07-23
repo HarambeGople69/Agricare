@@ -69,6 +69,8 @@ dependencies:
   background_location: ^0.8.1
   nepali_utils: ^3.0.3
   flutter_dropdown_search: ^0.0.2
+  # background_locator: ^1.6.12
+  # flutter_background_geolocation: ^4.7.0
   # flutter_background_service: ^2.1.3
   
 
